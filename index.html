@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Chicken vs Crabs Game</title>
+	<style type="text/css">
+		canvas {
+	       border: 2px solid black;
+	       background-color: blue
+
+	}
+	</style>
+
+</head>
+<body>
+	<h1>Chicken vs Crabs Game</h1>
+
+	<canvas id="myCanvas" width="1000" height="500">
+		
+	</canvas>
+
+ <script type="text/javascript">
+ 	var canvas = document.getElementById('myCanvas');
+ 	var ctx = canvas.getContext('2d');
+
+ 	let screenWidth = 1000;
+ 	let screenHeight = 500;
+ 	let width = 50;
+ 	var isGameLive = true;
+ 	var myLives = 4;
+ 	var hasPowerUp = false;
+
+ 	class UIelement {
+ 		constructor(x, y, width,height,color) {
+ 			this.x = x;
+ 			this.y = y;
+ 			this.width = width;
+ 			this.height = height;
+ 			this.color = color;
+
+ 		}
+	}
+
+
+	class PowerUp {
+		constructor(x, y, width,height,color) {
+ 			this.x = x;
+ 			this.y = y;
+ 			this.width = width;
+ 			this.height = height;
+ 			this.color = color;
+
+ 		}
+
+	}
+
+
+
+ 	class GameCharacter {
+ 		constructor(x, y, width,height,color, speed, xSpeed, ySpeed, distance=50) {
+ 			this.x = x;
+ 			this.y = y;
+ 			this.startX = x;
+ 			this.startY = y;
+ 			this.width = width;
+ 			this.height = height;
+ 			this.color = color;
+ 			this.speed = speed;
+ 			this.xSpeed = xSpeed;
+ 			this.ySpeed = ySpeed;
+ 			this.maxSpeed = 4;
+ 			this.distance = distance;
+ 		}
+
+ 		moveVertially(){
+ 			if (this.y > this.startY + this.distance || this.y < this.startY) {
+ 				this.speed = -this.speed
+ 			} 
+
+ 			this.y += this.speed;
+ 		}
+ 		
+ 		moveHorizontally(){
+  			if (this.x > this.startX + this.distance || this.x < this.startX) {
+ 				this.speed = -this.speed
+ 			} 
+ 		
+
+ 			this.x += this.speed;
+ 		}
+
+
+
+
+
+
+/* 			if (this.x < 50) {
+ 				this.x=50;
+ 				this.speed = 0;
+ 			}
+ 			this.x += this.speed;
+ 		}
+ 		
+*/
+
+ 		move() {
+ 			this.x += this.xSpeed;
+ 			this.y += this.ySpeed;
+ 			if (this.x < 20) {
+ 				this.x=20;
+ 				this.speed = 0;
+ 			}
+ 			if (this.x > 950) {
+ 				this.x=950;
+ 				this.speed = 0;
+ 			}
+ 			if (this.y < 20) {
+ 				this.y=20;
+ 				this.speed = 0;
+ 			}
+ 			if (this.y > 450) {
+ 				this.y=450;
+ 				this.speed = 0;
+ 			}
+ 		}
+ 	}
+
+ 	var rectangles = [
+        new GameCharacter( 450, 100, 20, 20, "rgb(255, 0, 0)" ,4,0,0,300 ),
+        new GameCharacter( 650, 100, 20, 20, "rgb(255, 0, 0)" ,3,0,0,300 ),
+        new GameCharacter( 800, 50, 20, 20, "rgb(255, 0, 0 )" ,4,0,0,320 )
+        
+        
+ 	];
+	var rectangles2 = [
+	  	new GameCharacter( 50, 35, 20, 20, "rgb(255, 0, 0 )" ,3.5,0,0, 150 ),
+        new GameCharacter( 150, 400, 20, 20, "rgb(255, 0, 0 )" ,3,0,0, 150 ),
+        new GameCharacter( 780, 450, 20, 20, "rgb(255, 0, 0 )" ,4,0,0, 150 )
+	];
+    
+    var lives = [
+		new UIelement( 890, 20, 20, 20,"rgb(249, 0, 0)" ),
+		new UIelement( 925, 20, 20, 20,"rgb(249, 0, 0)" ),
+		new UIelement( 960, 20, 20, 20,"rgb(249, 0, 0)" )
+
+    ];
+
+
+    var powerUps = [
+    	new PowerUp( 100, 35, 20, 20,"rgb(249, 0, 0)" ),
+		new PowerUp( 350, 250, 20, 20,"rgb(249, 0, 0)" ),
+		new PowerUp( 550, 400, 20, 20,"rgb(249, 0, 0)" ),
+		new PowerUp( 700, 50, 20, 20,"rgb(249, 0, 0)" )
+    ]
+
+	var mines = [
+		new GameCharacter( 110, 100, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 110, 150, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 110, 200, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 110, 250, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 110, 300, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 110, 350, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 110, 400, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 110, 450, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+        
+        new GameCharacter( 250, 0, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 250, 50, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 250, 100, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+        new GameCharacter( 250, 150, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 250, 200, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+        new GameCharacter( 250, 250, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 250, 300, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+        new GameCharacter( 250, 350, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+
+        new GameCharacter( 400, 100, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 400, 150, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 400, 200, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 400, 250, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 400, 300, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 400, 350, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 400, 400, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 400, 450, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+
+        new GameCharacter( 550, 0, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 550, 50, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 550, 100, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 550, 150, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 550, 200, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 550, 250, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 550, 300, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 550, 350, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+
+		new GameCharacter( 700, 100, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 700, 150, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 700, 200, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 700, 250, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 700, 300, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 700, 350, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 700, 400, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+        new GameCharacter( 700, 450, 30, 30, "rgb(255, 0, 0 )" ,4,0,0 ),
+
+        new GameCharacter( 850, 0, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 850, 50, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 850, 100, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 850, 150, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 850, 200, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 850, 250, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 850, 300, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+		new GameCharacter( 850, 350, 30, 30, "rgb(255, 0, 0 )" ,2,0,0 ),
+	]
+		
+
+
+
+ 	/*var wall = [
+ 		new GameCharacter( 50, 450, 50, 50, "rgb(255, 0, 0 )" ,4,0,0 )
+ 	]*/
+
+
+	var player = new GameCharacter(25, 450, 30, 30, "rgb(111, 255, 0)" ,0,0,0)
+
+ 	var goal = new GameCharacter( 915, 100, 40, 40, "rgb(111, 255, 0 )" ,0,0,0 )
+
+
+ 	var sprites = {};
+
+ 	var loadSprites = function(){
+ 		sprites.player = new Image();
+ 		sprites.player.src = 'images/hero.png';
+
+ 		sprites.background = new Image();
+ 		sprites.background.src = 'images/background.png';
+
+ 		sprites.enemy = new Image();
+ 		sprites.enemy.src = 'images/enemy.png';
+
+ 		sprites.goal = new Image();
+ 		sprites.goal.src = 'images/chest.png';
+
+ 		sprites.mine = new Image();
+ 		sprites.mine.src = 'images/mine.png';
+
+ 		sprites.live = new Image();
+ 		sprites.live.src = 'images/live.png';
+
+ 		sprites.powerup = new Image();
+ 		sprites.powerup.src = 'images/powerup.png';
+
+
+
+
+
+ 	}
+
+
+ 	document.onkeydown = function(event) {
+ 		let keyPressed = event.keyCode;
+ 		if (keyPressed == 39) {
+ 			player.xSpeed = player.maxSpeed;
+ 		}else if (keyPressed == 37) {
+ 			player.xSpeed = -player.maxSpeed;
+ 		}else if (keyPressed == 40) {
+ 			player.ySpeed = player.maxSpeed;
+ 		}else if (keyPressed == 38) {
+ 			player.ySpeed = -player.maxSpeed;
+ 		}
+
+ 	};
+ 	document.onkeyup = function(event) {
+ 		player.speed = 0;
+ 		player.xSpeed = 0;
+ 		player.ySpeed = 0;
+ 	}
+
+ 	var checkCollisions = function (rect1, rect2) {
+ 		var xOverlap = Math.abs(rect1.x - rect2.x) <= Math.max(rect1.width, rect2.width);
+ 		var yOverlap = Math.abs(rect1.y - rect2.y) <= Math.max(rect1.height, rect2.height);
+ 		return xOverlap && yOverlap;
+ 	}
+
+
+
+ 	var draw = function(){
+ 		ctx.clearRect(0, 0, screenWidth,screenHeight);
+
+
+ 		ctx.drawImage(sprites.background, 0, 0);
+ 		
+ 		ctx.drawImage(sprites.goal, goal.x, goal.y);
+ 		
+ 		for (var i = 0; i < mines.length; i++) {
+ 			ctx.drawImage(sprites.mine, mines[i].x, mines[i].y);
+ 		}
+
+ 		for (var i = 0; i < powerUps.length; i++) {
+ 			ctx.drawImage(sprites.powerup, powerUps[i].x, powerUps[i].y);
+
+ 		}
+
+
+ 		for (var i = 0; i < lives.length; i++) {
+ 			ctx.drawImage(sprites.live, lives[i].x, lives[i].y);
+
+ 		}
+
+		/*ctx.fillStyle = player.color;
+ 		    ctx.fillRect(player.x,player.y, player.width, player.height);*/
+
+
+ 		/*ctx.fillStyle = goal.color;
+ 		    ctx.fillRect(goal.x,goal.y, goal.width, goal.height);*/
+
+ 		for (var i = 0; i < rectangles.length; i++) {
+ 			ctx.drawImage(sprites.enemy, rectangles[i].x, rectangles[i].y);
+ 		}
+
+ 		for (var i = 0; i < rectangles2.length; i++) {
+ 			ctx.drawImage(sprites.enemy, rectangles2[i].x, rectangles2[i].y);
+
+  			/*ctx.fillStyle = rectangles[i].color;
+ 		    ctx.fillRect(rectangles[i].x,rectangles[i].y, rectangles[i].width, rectangles[i].height);*/
+		}
+		ctx.drawImage(sprites.player, player.x, player.y);
+
+ 		
+ 		/*ctx.fillStyle = rectangles[1].color;
+ 		ctx.fillRect(rectangles[1].x,rectangles[1].y, rectangles[1].width, rectangles[1].height);
+
+ 		ctx.fillStyle = rectangles[2].color;
+ 		ctx.fillRect(rectangles[2].x,rectangles[2].y, rectangles[2].width, rectangles[2].height);
+
+ 		ctx.fillStyle = rectangles[3].color;
+ 		ctx.fillRect(rectangles[3].x,rectangles[3].y, rectangles[3].width, rectangles[3].height);
+*/
+ 	 	if (myLives == 0 ) {
+ 	 		
+         	endGameLogic("Game Over");
+	 	}
+ 	}
+
+ 	var update = function () {
+ 		if (checkCollisions(player, goal)){
+ 		 		endGameLogic("You Win");
+ 		}
+ 		player.move();
+
+ 		for (var i = 0; i < powerUps.length; i++) {
+ 	 		if (checkCollisions(player, powerUps[i])){
+ 	 		    powerUps.splice(i,1)
+ 	 		    hasPowerUp = true;
+
+
+
+			}
+ 	 			
+
+		}
+
+ 		for (var i = 0; i < mines.length; i++) {
+ 	 		if (checkCollisions(player, mines[i])){
+ 	 			myLives --;
+ 	 		player.x = player.startX;
+ 			player.y = player.startY;
+ 			//ctx.drawImage(sprites.player, player.x, player.y);
+ 			console.log(myLives)
+ 			lives.pop()
+ 			
+ 	 			
+
+	 	break;
+ 		 		//endGameLogic("Game Over");
+ 		 		
+ 		 	}
+                                          
+ 		}
+
+ 		for (var i = 0; i < rectangles2.length; i++) {
+ 	 		if (checkCollisions(player, rectangles2[i])){
+ 	 			if (hasPowerUp){
+ 		 			rectangles2.splice(i,1)
+ 	 		       	hasPowerUp = false;
+ 	 		    }else{
+ 	 			myLives --;
+ 	 		player.x = player.startX;
+ 			player.y = player.startY;
+ 			//ctx.drawImage(sprites.player, player.x, player.y);
+ 			console.log(myLives)
+ 			lives.pop()
+ 			}
+ 			
+ 	 			
+/* 	 	if (myLives == 0 ) {
+         	endGameLogic("Game Over");
+	 	}*/
+	 	break;
+
+ 		 		//endGameLogic("Game Over");
+ 		 		
+ 		 	}
+
+ 		 		rectangles2[i].moveHorizontally();
+		}
+			
+ 		for (var i = 0; i < rectangles.length; i++) {
+ 		 	if (checkCollisions(player, rectangles[i])){
+ 		 		if (hasPowerUp){
+ 		 			rectangles.splice(i,1)
+ 	 		       	hasPowerUp = false;
+
+ 		 		}else{
+ 		 		myLives --;
+ 	 		player.x = player.startX;
+ 			player.y = player.startY;
+ 			//ctx.drawImage(sprites.player, player.x, player.y);
+ 			console.log(myLives)
+ 			lives.pop()
+ 		}
+ 			
+ 	 			
+/* 	 	if (myLives == 0 ) {
+         	endGameLogic("Game Over");
+	 	}*/
+	 	break;
+ 		 		//endGameLogic("Game Over");
+ 		 		
+ 		 	}
+ 
+  			rectangles[i].moveVertially();
+		}
+ 		
+ 	}
+
+ 	var endGameLogic=function(text) {
+ 		//checkCollisions{}
+ 		isGameLive = false;
+ 		alert(text);
+ 		window.location = "";
+ 	}
+
+
+
+
+ 	var step = function () {
+ 		update();
+ 		draw();
+ 		if (isGameLive){
+ 			window.requestAnimationFrame(step);
+ 		}
+ 	}
+ 	loadSprites();
+ 	step();
+ 	
+ </script>
+
+</body>
+</html>
